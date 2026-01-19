@@ -18,7 +18,6 @@ export function Footer() {
     { label: "AI Image Generator", labelZh: "AI 图像生成", href: localePrefix },
     { label: "Create Image", labelZh: "开始创作", href: `${localePrefix}/create` },
     { label: "Pricing", labelZh: "价格", href: `${localePrefix}/pricing` },
-    { label: "Blog", labelZh: "博客", href: `${localePrefix}/blog` },
   ];
 
   const legalLinks = [
@@ -38,7 +37,7 @@ export function Footer() {
               {t('tagline')}
             </p>
             <p className="mt-3 text-xs text-slate-500">
-              Powered by CogView-4 • GLM-Image
+              Powered by Flux.2 [Klein] • Black Forest Labs
             </p>
           </div>
 
@@ -131,9 +130,14 @@ export function Footer() {
 
         {/* Bottom */}
         <div className="mt-12 flex flex-col items-center justify-between gap-4 border-t border-slate-800 pt-8 md:flex-row">
-          <p className="text-center text-sm text-slate-500 md:text-left">
-            © {new Date().getFullYear()} {siteConfig.domain}. {t('rights')}
-          </p>
+          <div className="flex flex-col gap-2">
+            <p className="text-center text-sm text-slate-500 md:text-left">
+              © {new Date().getFullYear()} {siteConfig.domain}. {t('rights')}
+            </p>
+            <p className="text-center text-xs text-slate-600 md:text-left max-w-lg">
+              {t('disclaimer')}
+            </p>
+          </div>
           <p className="text-center text-sm text-slate-500 md:text-right">
             Built by <span className="text-slate-400">{siteConfig.author}</span>
           </p>

@@ -18,6 +18,9 @@ export default async function HomeStaticContent({ locale }: HomeStaticContentPro
             {/* How Section */}
             <HowSection t={tHome} />
 
+            {/* Comparison Table - High SEO Weight */}
+            <ComparisonSection t={tHome} />
+
             {/* Features Section */}
             <FeaturesSection t={tFeatures} />
 
@@ -128,6 +131,61 @@ function HowSection({ t }: { t: any }) {
                                 )}
                             </div>
                         ))}
+                    </div>
+                </div>
+            </div>
+        </section>
+    );
+}
+
+// 高权重 SEO 内容 - Flux.2 Klein vs Flux.1 Dev 对比表格
+function ComparisonSection({ t }: { t: any }) {
+    return (
+        <section className="py-20 bg-slate-900/50">
+            <div className="container px-4 md:px-6">
+                <div className="max-w-4xl mx-auto">
+                    <div className="text-center space-y-4 mb-12">
+                        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                            {t('comparison.title')}
+                        </h2>
+                        <p className="text-lg text-slate-400 max-w-2xl mx-auto">
+                            {t('comparison.subtitle')}
+                        </p>
+                    </div>
+
+                    {/* Comparison Table */}
+                    <div className="overflow-hidden rounded-2xl border border-slate-700 bg-slate-800/50">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-slate-700">
+                                    <th className="p-4 text-left text-slate-400 font-medium">{t('comparison.feature')}</th>
+                                    <th className="p-4 text-center text-indigo-400 font-bold">{t('comparison.klein')}</th>
+                                    <th className="p-4 text-center text-slate-400 font-medium">{t('comparison.dev')}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr className="border-b border-slate-700/50">
+                                    <td className="p-4 text-slate-300">{t('comparison.model_size')}</td>
+                                    <td className="p-4 text-center text-indigo-300 font-bold">{t('comparison.klein_size')}</td>
+                                    <td className="p-4 text-center text-slate-400">{t('comparison.dev_size')}</td>
+                                </tr>
+                                <tr className="border-b border-slate-700/50">
+                                    <td className="p-4 text-slate-300">{t('comparison.speed')}</td>
+                                    <td className="p-4 text-center text-green-400 font-bold">{t('comparison.klein_speed')}</td>
+                                    <td className="p-4 text-center text-slate-400">{t('comparison.dev_speed')}</td>
+                                </tr>
+                                <tr className="border-b border-slate-700/50">
+                                    <td className="p-4 text-slate-300">{t('comparison.vram')}</td>
+                                    <td className="p-4 text-center text-green-400 font-bold">{t('comparison.klein_vram')}</td>
+                                    <td className="p-4 text-center text-slate-400">{t('comparison.dev_vram')}</td>
+                                </tr>
+                                <tr>
+                                    <td className="p-4 text-slate-300">{t('comparison.best_for')}</td>
+                                    <td className="p-4 text-center text-indigo-300 font-bold">{t('comparison.klein_best')}</td>
+                                    <td className="p-4 text-center text-slate-400">{t('comparison.dev_best')}</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>

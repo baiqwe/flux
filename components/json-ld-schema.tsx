@@ -1,6 +1,6 @@
 /**
- * JSON-LD Structured Data for SoftwareApplication
- * Helps search engines understand GLM-Image as a web application
+ * JSON-LD Structured Data for WebApplication
+ * Helps search engines understand FluxKlein as a web application
  * 
  * Note: This is a server component to avoid hydration issues
  */
@@ -12,12 +12,17 @@ export async function SoftwareApplicationSchema({ locale }: { locale: string }) 
 
     const schema = {
         "@context": "https://schema.org",
-        "@type": "SoftwareApplication",
-        "name": `${siteConfig.name} - ${t('title')}`,
+        "@type": "WebApplication",
+        "name": `${siteConfig.name} - Flux.2 [Klein] Online Generator`,
         "description": t('description'),
-        "applicationCategory": ["DesignApplication", "AITool"],
+        "applicationCategory": "AI Image Generator",
         "operatingSystem": "Web Browser",
-        "alternateName": ["GLM-4.5 Image", "GLM Image Generator", "Zhipu AI Alternative"],
+        "alternateName": [
+            "Flux 2 Klein",
+            "Flux.2 Klein Generator",
+            "Flux Klein Online",
+            "Black Forest Labs Flux"
+        ],
         "offers": {
             "@type": "Offer",
             "price": "0",
@@ -25,15 +30,21 @@ export async function SoftwareApplicationSchema({ locale }: { locale: string }) 
             "description": "3 free generations for new users"
         },
         "featureList": [
-            "GLM-4.5 Text to Image Generation",
+            "Flux.2 [Klein] 4B parameter model",
+            "2x faster generation than larger models",
+            "No GPU required - run in browser",
             "Multiple aspect ratios (1:1, 16:9, 9:16)",
-            "5 style presets (Photorealistic, Digital Art, Anime, Cinematic)",
-            "No queue, instant generation",
-            "Multi-language support (English, Chinese)",
-            "High resolution output"
+            "Multiple style presets",
+            "No ComfyUI setup needed",
+            "Apache 2.0 licensed model"
         ],
-        "screenshot": `${siteConfig.url}/og-image.png`
-        // Note: aggregateRating removed - only add when backed by real user review data
+        "screenshot": `${siteConfig.url}/og-image.png`,
+        "url": siteConfig.url,
+        "provider": {
+            "@type": "Organization",
+            "name": siteConfig.name,
+            "url": siteConfig.url
+        }
     };
 
     return (
@@ -43,4 +54,3 @@ export async function SoftwareApplicationSchema({ locale }: { locale: string }) 
         />
     );
 }
-

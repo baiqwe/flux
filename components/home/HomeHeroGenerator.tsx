@@ -32,35 +32,35 @@ const ASPECT_RATIOS = [
     { id: "9:16", icon: "▯" },
 ];
 
-// 灵感画廊 - 高质量提示词示例
+// 灵感画廊 - Flux.2 Klein 高质量提示词示例
 const INSPIRATION_PROMPTS = [
     {
         id: "cyber-city",
-        prompt: "A breathtaking cyberpunk cityscape at night, neon lights reflecting on wet streets, flying cars, massive holographic advertisements, rain falling, blade runner atmosphere, hyper detailed, 8K",
-        promptZh: "令人惊叹的赛博朋克城市夜景，霓虹灯在潮湿街道上的倒影，飞行汽车，巨大的全息广告，细雨绵绵，银翼杀手氛围",
+        prompt: "A futuristic cyberpunk city at night, towering skyscrapers with neon signs, flying cars leaving light trails, rain-soaked streets reflecting colorful lights, cinematic atmosphere, 8K ultra detailed",
+        promptZh: "未来赛博朋克城市夜景，高耸入云的摩天大楼霓虹招牌，飞行汽车留下光迹，雨后街道倒映五彩灯光，电影氛围",
         label: "🌃 Cyberpunk",
         labelZh: "🌃 赛博朋克"
     },
     {
         id: "anime-girl",
-        prompt: "A beautiful anime girl with long silver hair, wearing a flowing white dress, standing in a field of glowing cherry blossoms at sunset, makoto shinkai style, ethereal lighting, highly detailed",
-        promptZh: "美丽的银发少女，身穿飘逸的白色长裙，站在发光的樱花花海中，夕阳西下，新海诚风格，空灵光效",
+        prompt: "Beautiful anime girl with flowing white hair, sakura petals dancing around her, soft sunset lighting, delicate features, Studio Ghibli inspired, dreamy atmosphere, highly detailed",
+        promptZh: "飘逸白发的美丽动漫少女，樱花花瓣在她周围飞舞，柔和的日落光线，精致五官，吉卜力风格，梦幻氛围",
         label: "🌸 Anime",
         labelZh: "🌸 动漫少女"
     },
     {
         id: "photo-portrait",
-        prompt: "Professional portrait photography of a confident woman CEO, natural lighting from large window, shallow depth of field, wearing elegant business attire, modern office background, shot on Canon EOS R5, 85mm lens",
-        promptZh: "专业人像摄影，自信的女性CEO，大窗户自然光，浅景深，优雅商务装，现代办公室背景，佳能相机质感",
+        prompt: "Professional fashion photography, young woman in minimalist white studio, dramatic side lighting, haute couture outfit, editorial style, shot on medium format camera, sharp focus",
+        promptZh: "专业时尚摄影，极简白色工作室中的年轻女性，戏剧性侧光，高级定制时装，编辑风格，中画幅相机质感",
         label: "📸 Portrait",
-        labelZh: "📸 人像写真"
+        labelZh: "📸 时尚写真"
     },
     {
-        id: "fantasy-dragon",
-        prompt: "An epic fantasy scene of a majestic golden dragon flying over ancient mountains at sunrise, dramatic clouds, magical atmosphere, cinematic composition, highly detailed scales, volumetric lighting",
-        promptZh: "史诗奇幻场景，雄伟的金龙在日出时分飞越古老山脉，戏剧性云层，魔幻氛围，电影级构图，精细鳞片",
-        label: "🐉 Fantasy",
-        labelZh: "🐉 奇幻巨龙"
+        id: "landscape",
+        prompt: "Majestic mountain landscape at golden hour, snow-capped peaks reflecting in crystal clear alpine lake, dramatic clouds, nature photography, National Geographic style, breathtaking scenery",
+        promptZh: "壮丽的黄金时刻山景，白雪皑皑的山峰倒映在清澈的高山湖泊中，戏剧性云层，自然摄影，国家地理风格",
+        label: "🏔️ Landscape",
+        labelZh: "🏔️ 风景大片"
     }
 ];
 
@@ -78,7 +78,7 @@ export default function HomeHeroGenerator({ onShowStaticContent, user }: HomeHer
     const { credits, refetchCredits } = useCredits();
     const { toast } = useToast();
 
-    const [prompt, setPrompt] = useState("A super cute fluffy white kitten with big blue eyes, sitting in a cozy basket with colorful yarn balls, soft studio lighting, high detail, 8k, Disney pixar style 3d render, cinematic composition");
+    const [prompt, setPrompt] = useState("A futuristic cyberpunk city at night, neon lights reflecting on wet streets, flying cars, cinematic atmosphere, ultra detailed, 8K");
     const [selectedStyle, setSelectedStyle] = useState("default");
     const [selectedRatio, setSelectedRatio] = useState("1:1");
     const [resultImage, setResultImage] = useState<string | null>(null);
@@ -130,7 +130,7 @@ export default function HomeHeroGenerator({ onShowStaticContent, user }: HomeHer
     }, [resultImage, onShowStaticContent]);
 
     const saveStateForLater = () => {
-        localStorage.setItem("pending_glm_generation", JSON.stringify({
+        localStorage.setItem("pending_flux_generation", JSON.stringify({
             prompt, selectedStyle, selectedRatio, timestamp: Date.now()
         }));
     };
@@ -207,7 +207,7 @@ export default function HomeHeroGenerator({ onShowStaticContent, user }: HomeHer
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `glm-image-${Date.now()}.webp`;
+            a.download = `flux-klein-${Date.now()}.webp`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -238,10 +238,10 @@ export default function HomeHeroGenerator({ onShowStaticContent, user }: HomeHer
                         </div>
                         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4 tracking-tight">
                             <span className="bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                                GLM-Image
+                                Flux.2 [Klein]
                             </span>
                             <span className="text-white/90 block mt-2 text-2xl md:text-3xl lg:text-4xl font-medium">
-                                {locale === 'zh' ? '高效图像生成' : 'AI Image Generator'}
+                                {locale === 'zh' ? '在线生成器' : 'Online Generator'}
                             </span>
                         </h1>
                         <p className="text-slate-400 max-w-2xl mx-auto text-base md:text-lg">
@@ -408,7 +408,7 @@ export default function HomeHeroGenerator({ onShowStaticContent, user }: HomeHer
                                             <div className="relative aspect-square max-h-[400px] w-full rounded-xl overflow-hidden border border-slate-700">
                                                 <Image
                                                     src={resultImage}
-                                                    alt="Generated by GLM-4"
+                                                    alt="Generated by Flux.2 Klein"
                                                     fill
                                                     className="object-contain"
                                                     unoptimized  // 跳过 Next.js 图片优化，直接加载外部 URL
@@ -463,7 +463,7 @@ export default function HomeHeroGenerator({ onShowStaticContent, user }: HomeHer
 
                         {/* Bottom info */}
                         <p className="text-center text-slate-600 text-xs mt-6">
-                            Powered by CogView-4 • GLM-Image Generator
+                            Powered by Flux.2 [Klein] • Black Forest Labs
                         </p>
                     </div>
                 </div>
