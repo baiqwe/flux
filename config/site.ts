@@ -4,13 +4,13 @@
 export const siteConfig = {
   // === 品牌标识 ===
   name: "FluxKlein",                        // 网站名称
-  domain: "fluxklein.ai",                   // 主域名
-  url: "https://fluxklein.ai",              // 完整 URL
+  domain: "www.flux2klein.cc",              // 主域名
+  url: "https://www.flux2klein.cc",         // 完整 URL
   author: "FluxKlein Team",                 // 作者
   supportEmail: "support@fluxklein.ai",     // 联系邮箱
 
   // === 分析追踪 ===
-  gaId: "G-PLACEHOLDER",                    // Google Analytics ID - 待用户提供
+  gaId: "G-HGYD4Z3NFS",                     // Google Analytics ID
 
   // === 国际化配置 ===
   i18n: {

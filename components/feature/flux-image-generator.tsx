@@ -53,13 +53,13 @@ const ASPECT_RATIOS = [
     { id: "4:3", name: "Standard", desc: "4:3", icon: "🖥️" },
 ];
 
-interface GLMImageGeneratorProps {
+interface FluxImageGeneratorProps {
     user: any;
     locale?: string;
     t?: any; // translations
 }
 
-export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGeneratorProps) {
+export default function FluxImageGenerator({ user, locale = "en", t }: FluxImageGeneratorProps) {
     const { credits, refetchCredits } = useCredits();
     const { toast } = useToast();
 
@@ -80,7 +80,7 @@ export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGe
     useEffect(() => {
         const query = new URLSearchParams(window.location.search);
         if (query.get("checkout") === "success") {
-            const savedState = localStorage.getItem("pending_glm_generation");
+            const savedState = localStorage.getItem("pending_flux_generation");
             if (savedState) {
                 try {
                     const parsed = JSON.parse(savedState);
@@ -88,7 +88,7 @@ export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGe
                     setSelectedStyle(parsed.selectedStyle || STYLES[0].id);
                     setSelectedRatio(parsed.selectedRatio || ASPECT_RATIOS[0].id);
 
-                    localStorage.removeItem("pending_glm_generation");
+                    localStorage.removeItem("pending_flux_generation");
 
                     confetti({
                         particleCount: 150,
@@ -125,7 +125,7 @@ export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGe
         }
 
         // Check for pending generation after login
-        const pendingAfterLogin = localStorage.getItem("pending_glm_generation");
+        const pendingAfterLogin = localStorage.getItem("pending_flux_generation");
         if (user && pendingAfterLogin) {
             try {
                 const parsed = JSON.parse(pendingAfterLogin);
@@ -134,7 +134,7 @@ export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGe
                     setPrompt(parsed.prompt || "");
                     setSelectedStyle(parsed.selectedStyle || STYLES[0].id);
                     setSelectedRatio(parsed.selectedRatio || ASPECT_RATIOS[0].id);
-                    localStorage.removeItem("pending_glm_generation");
+                    localStorage.removeItem("pending_flux_generation");
 
                     toast({
                         title: locale === "zh" ? "欢迎！" : "Welcome!",
@@ -144,13 +144,13 @@ export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGe
                     });
                 }
             } catch (e) {
-                localStorage.removeItem("pending_glm_generation");
+                localStorage.removeItem("pending_flux_generation");
             }
         }
     }, [user]);
 
     const saveStateForLater = () => {
-        localStorage.setItem("pending_glm_generation", JSON.stringify({
+        localStorage.setItem("pending_flux_generation", JSON.stringify({
             prompt,
             selectedStyle,
             selectedRatio,
@@ -184,7 +184,7 @@ export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGe
         setShowLoginPrompt(false);
 
         try {
-            console.log("Calling GLM-Image API...");
+            console.log("Calling Flux API...");
 
             const response = await fetch("/api/ai/text-to-image", {
                 method: "POST",
@@ -257,7 +257,7 @@ export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGe
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `glm-image-${Date.now()}.webp`;
+            a.download = `flux-klein-${Date.now()}.webp`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -282,7 +282,7 @@ export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGe
                     {/* Header */}
                     <div className="space-y-2">
                         <h1 className="text-3xl font-bold tracking-tight">
-                            🚀 {locale === "zh" ? "GLM-4.5 图像生成器" : "GLM-4.5 Image Generator"}
+                            🚀 {locale === "zh" ? "Flux.2 [Klein] 图像生成器" : "Flux.2 [Klein] Image Generator"}
                         </h1>
                         <p className="text-muted-foreground">
                             {locale === "zh"
@@ -439,8 +439,8 @@ export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGe
                                     </h4>
                                     <p className="text-sm text-muted-foreground">
                                         {locale === "zh"
-                                            ? "创建免费账户开始使用 GLM-4.5 生成图像。免费获得 3 次生成机会！"
-                                            : "Create a free account to start generating images with GLM-4.5. Get 3 free generations!"}
+                                            ? "创建免费账户开始使用 Flux.2 [Klein] 生成图像。免费获得 3 次生成机会！"
+                                            : "Create a free account to start generating images with Flux.2 [Klein]. Get 3 free generations!"}
                                     </p>
                                     <Button
                                         onClick={() => window.location.href = `/${locale}/sign-in`}
@@ -467,7 +467,7 @@ export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGe
                                     <div className="relative aspect-square w-full max-w-[512px] mx-auto rounded-lg overflow-hidden border bg-muted/50">
                                         <Image
                                             src={resultImage}
-                                            alt="Generated by GLM-4.5"
+                                            alt="Generated by Flux.2 [Klein]"
                                             fill
                                             className="object-contain"
                                         />
@@ -498,7 +498,7 @@ export default function GLMImageGenerator({ user, locale = "en", t }: GLMImageGe
                                         <Sparkles className="w-6 h-6 text-yellow-500 absolute -top-1 -right-1 animate-pulse" />
                                     </div>
                                     <span className="text-lg">
-                                        {locale === "zh" ? "GLM-4.5 正在创作..." : "GLM-4.5 is creating..."}
+                                        {locale === "zh" ? "Flux.2 [Klein] 正在创作..." : "Flux.2 [Klein] is creating..."}
                                     </span>
                                     <span className="text-sm">
                                         {locale === "zh" ? "通常需要 5-15 秒" : "Usually takes 5-15 seconds"}

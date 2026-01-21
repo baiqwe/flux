@@ -35,9 +35,19 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  // 3. 刷新 Session (这会触发上面的 setAll)
-  // 重要：不要在这里写 user 变量的逻辑判断，只负责刷新 Cookie
-  await supabase.auth.getUser()
+  // 3. 刷新 Session - 性能优化
+  // 仅在以下情况执行网络请求：
+  // 1. 访问受保护路由（如 /dashboard）
+  // 2. 存在 Supabase 认证 cookie（用户可能已登录）
+  // 这避免了对纯静态 SEO 页面（首页、博客等）的 TTFB 阻塞
+  const pathname = request.nextUrl.pathname;
+  const isProtectedRoute = pathname.includes('/dashboard') || pathname.includes('/create');
+  const hasAuthCookie = request.cookies.getAll().some(c => c.name.includes('sb-'));
+
+  if (isProtectedRoute || hasAuthCookie) {
+    // 只有在看起来像登录用户或访问私有页面时，才验证 session
+    await supabase.auth.getUser();
+  }
 
   return response
 }

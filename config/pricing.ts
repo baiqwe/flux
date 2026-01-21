@@ -1,5 +1,5 @@
 // ============================================
-// GLM-Image 激进定价策略
+// FluxKlein 定价策略
 // 核心：10积分/张，高额锚定原价，制造紧迫感
 // ============================================
 
@@ -37,7 +37,7 @@ export const PLAN_STARTER: PricingPlan = {
     originalPrice: 9.99,     // 无折扣
     credits: 1000,           // 100张
     type: 'one_time',
-    productId: 'prod_5zsJuy4XoAHe7vdPJXWeWA',
+    productId: 'prod_6rvINKKPZ1RVc1TydDrotC',
     badge: '🔥 STARTER',
     badgeZh: '🔥 入门',
     features: [
@@ -66,7 +66,7 @@ export const PLAN_PRO_MONTHLY: PricingPlan = {
     credits: 4000,           // 400张
     type: 'subscription',
     interval: 'month',
-    productId: 'prod_5dlhcPKZ6PGN0BcjgDxymV',
+    productId: 'prod_syusjnRdboOKtZXSgGsDm',
     badge: '💎 BEST VALUE',
     badgeZh: '💎 超值之选',
     isPopular: true,
@@ -96,7 +96,7 @@ export const PLAN_PRO_YEARLY: PricingPlan = {
     credits: 30000,          // 3000张
     type: 'subscription',
     interval: 'year',
-    productId: 'prod_4QnIT6F1UW5MRQJDlvvyx',
+    productId: 'prod_4NO2mGFJURc7R8NzCU7rhn',
     badge: '⚡️ -70% DEAL',
     badgeZh: '⚡️ 限时7折',
     features: [

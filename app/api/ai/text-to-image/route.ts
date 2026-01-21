@@ -1,113 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { CREDITS_PER_GENERATION } from "@/config/pricing";
+import Replicate from "replicate";
 
-// Use Node.js runtime for Vercel
+// 使用 Node.js runtime
 export const runtime = 'nodejs';
-export const maxDuration = 60; // 1 minute timeout
+export const maxDuration = 60; // Flux 生成通常在 2-10秒，60秒足够
 
-// 智谱 AI API 端点
-const ZHIPU_API_URL = "https://open.bigmodel.cn/api/paas/v4/images/generations";
-const ZHIPU_CHAT_URL = "https://open.bigmodel.cn/api/paas/v4/chat/completions";
+// 初始化 Replicate 客户端
+const replicate = new Replicate({
+    auth: process.env.REPLICATE_API_TOKEN,
+});
 
-// 支持的尺寸
-const SUPPORTED_SIZES: Record<string, string> = {
-    "1:1": "1024x1024",
-    "16:9": "1920x1080",
-    "9:16": "1080x1920",
-    "4:3": "1280x960",
-    "3:4": "960x1280",
-};
+// 模型选择：
+// - flux-1-schnell: 速度快，成本低，适合 SaaS（~2-4秒）
+// - flux-1-dev: 更高质量，速度稍慢（~5-10秒）
+// - flux-1-pro: 最高质量，商业使用
+const FLUX_MODEL = "black-forest-labs/flux-schnell";
 
-// 模型选项
-const MODELS = {
-    "cogview-4": "cogview-4",           // 最新模型，支持汉字生成
-    "glm-image": "glm-image",           // GLM 图像模型
-    "cogview-3-flash": "cogview-3-flash" // 快速模型
-};
-
-// 风格提示词映射
-const STYLE_HINTS: Record<string, string> = {
-    photo: "photorealistic photography, natural lighting, high resolution, sharp focus, professional camera",
-    art: "artistic masterpiece, painterly style, vibrant colors, expressive brushstrokes, gallery quality",
-    anime: "anime style, manga illustration, cel shading, vibrant colors, Japanese animation aesthetic",
-    cinematic: "cinematic film still, dramatic lighting, movie scene, epic composition, anamorphic lens",
-    default: "highly detailed, professional quality, stunning visual"
-};
-
-/**
- * 提示词隐形增强
- * 使用 GLM-4-Flash 将用户的简单提示词扩写成大师级提示词
- * 
- * 优化点：
- * 1. 保留用户原始语言（中文进中文出，英文进英文出）
- * 2. 保护引号内的文字不被翻译（用于文字渲染）
- * 3. 智谱 CogView 原生支持中文，中文提示词效果更好
- */
-async function enhancePrompt(
-    userPrompt: string,
-    style: string,
-    apiKey: string
-): Promise<{ enhanced: string; success: boolean }> {
-    try {
-        const styleHint = STYLE_HINTS[style] || STYLE_HINTS.default;
-
-        const response = await fetch(ZHIPU_CHAT_URL, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": `Bearer ${apiKey}`,
-            },
-            body: JSON.stringify({
-                model: "glm-4-flash",
-                messages: [{
-                    role: "system",
-                    content: `You are an expert AI art prompt engineer for image generation. Your job is to transform simple user prompts into detailed, vivid descriptions that will produce stunning images.
-
-Rules:
-1. **Detect Language**: Check if the user's input is Chinese or English.
-2. **Language Consistency**: 
-   - If the user input is in **Chinese**, the output MUST be in **Chinese**.
-   - If the user input is in **English**, the output MUST be in **English**.
-   - **DO NOT TRANSLATE** the core meaning across languages.
-3. **Text Preservation**: If the user provides specific text to be displayed (usually in quotes like "文字内容" or specific names), YOU MUST KEEP IT EXACTLY AS IS. Do not alter or translate text content meant for rendering.
-4. Expand the prompt with artistic details: lighting, composition, atmosphere, textures, colors.
-5. Add quality boosters appropriate to the language:
-   - For Chinese: 高清, 精细, 大师级, 专业品质, 8K
-   - For English: 8K, highly detailed, masterpiece, professional
-6. Incorporate the style direction: "${styleHint}" (Translate this style concept into the target language naturally).
-7. Output ONLY the improved prompt, no explanations or quotes.
-8. Keep under 200 words.`
-                }, {
-                    role: "user",
-                    content: userPrompt
-                }],
-                temperature: 0.7,
-                max_tokens: 500  // 增加 token 限制，中文扩写需要更多空间
-            })
-        });
-
-        if (!response.ok) {
-            console.warn("Prompt enhancement failed, using original:", response.status);
-            return { enhanced: userPrompt, success: false };
-        }
-
-        const data = await response.json();
-        const enhanced = data.choices?.[0]?.message?.content?.trim();
-
-        if (enhanced && enhanced.length > 5) {  // 降低阈值，中文提示词可能较短
-            console.log("=== Prompt Enhanced ===");
-            console.log("Original:", userPrompt);
-            console.log("Enhanced:", enhanced);
-            return { enhanced, success: true };
-        }
-
-        return { enhanced: userPrompt, success: false };
-    } catch (error) {
-        console.warn("Prompt enhancement error:", error);
-        return { enhanced: userPrompt, success: false };
-    }
-}
+// 支持的宽高比
+const SUPPORTED_RATIOS = [
+    "1:1", "16:9", "21:9", "3:2", "2:3",
+    "4:5", "5:4", "3:4", "4:3", "9:16", "9:21"
+];
 
 export async function POST(request: NextRequest) {
     const supabase = await createClient();
@@ -117,11 +32,9 @@ export async function POST(request: NextRequest) {
             prompt,
             aspect_ratio = "1:1",
             style = "default",
-            model = "cogview-4",
-            enhance = false  // 🔴 裸模型直出：默认关闭提示词增强
         } = await request.json();
 
-        // 1. Authentication
+        // 1. 鉴权
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         if (authError || !user) {
             return NextResponse.json({
@@ -130,7 +43,7 @@ export async function POST(request: NextRequest) {
             }, { status: 401 });
         }
 
-        // 2. Input Validation
+        // 2. 输入验证
         if (!prompt || typeof prompt !== 'string' || prompt.trim().length === 0) {
             return NextResponse.json({
                 error: "Please enter a prompt",
@@ -145,20 +58,20 @@ export async function POST(request: NextRequest) {
             }, { status: 400 });
         }
 
-        const zhipuApiKey = process.env.ZHIPU_API_KEY;
-        if (!zhipuApiKey) {
-            console.error("ZHIPU_API_KEY is not set");
+        // 验证 API Token
+        if (!process.env.REPLICATE_API_TOKEN) {
+            console.error("REPLICATE_API_TOKEN is not set");
             return NextResponse.json({
                 error: "Service configuration error",
                 code: "CONFIG_ERROR"
             }, { status: 500 });
         }
 
-        // 3. Deduct Credits
+        // 3. 积分扣除（原子化扣费）
         const { data: deductSuccess, error: rpcError } = await supabase.rpc('decrease_credits', {
             p_user_id: user.id,
             p_amount: CREDITS_PER_GENERATION,
-            p_description: `CogView Generation (${model})`
+            p_description: `Flux.2 [Klein] Generation`
         });
 
         if (rpcError) {
@@ -177,100 +90,84 @@ export async function POST(request: NextRequest) {
             }, { status: 402 });
         }
 
-        // 4. Prompt Processing - 裸模型直出方案
-        // 🔴 已禁用提示词增强：所想即所得，用户输入什么模型就画什么
+        // 4. 构建 Prompt
         let finalPrompt = prompt.trim();
-        const wasEnhanced = false;
 
-        // 注释掉提示词增强逻辑 - 保留代码便于将来恢复
-        // if (enhance) {
-        //     const { enhanced, success } = await enhancePrompt(finalPrompt, style, zhipuApiKey);
-        //     if (success) {
-        //         finalPrompt = enhanced;
-        //         wasEnhanced = true;
-        //     }
-        // }
+        // 如果有风格选择，拼接到 prompt
+        if (style && style !== 'default') {
+            const styleMap: Record<string, string> = {
+                photo: "photorealistic photography, natural lighting",
+                art: "digital art masterpiece, vibrant colors",
+                anime: "anime style, manga illustration",
+                cinematic: "cinematic film still, dramatic lighting"
+            };
+            if (styleMap[style]) {
+                finalPrompt = `${finalPrompt}, ${styleMap[style]}`;
+            }
+        }
 
-        // 5. Call Zhipu CogView API
+        // 验证宽高比
+        const ratio = SUPPORTED_RATIOS.includes(aspect_ratio) ? aspect_ratio : "1:1";
+
+        console.log("=== Flux Generation Start ===");
+        console.log("User:", user.id);
+        console.log("Prompt:", finalPrompt);
+        console.log("Aspect Ratio:", ratio);
+
         try {
-            // 获取尺寸
-            const size = SUPPORTED_SIZES[aspect_ratio] || "1024x1024";
-
-            // 获取模型
-            const selectedModel = MODELS[model as keyof typeof MODELS] || MODELS["cogview-4"];
-
-            console.log("=== CogView Generation ===");
-            console.log("Original Prompt:", prompt);
-            console.log("Final Prompt:", finalPrompt);
-            console.log("Enhanced:", wasEnhanced);
-            console.log("Size:", size);
-            console.log("Model:", selectedModel);
-
-            const response = await fetch(ZHIPU_API_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${zhipuApiKey}`,
-                },
-                body: JSON.stringify({
-                    model: selectedModel,
+            // 5. 调用 Replicate Flux API
+            const output = await replicate.run(FLUX_MODEL, {
+                input: {
                     prompt: finalPrompt,
-                    size: size,
-                    quality: "standard",
-                }),
+                    aspect_ratio: ratio,
+                    output_format: "webp",
+                    output_quality: 90,
+                    disable_safety_checker: false // 根据内容策略决定
+                }
             });
 
-            if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                console.error("Zhipu API Error:", response.status, errorData);
-                throw new Error(errorData.error?.message || `API Error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log("CogView Response:", JSON.stringify(data, null, 2));
-
-            // 智谱返回格式: { data: [{ url: "..." }] }
-            const resultUrl = data.data?.[0]?.url;
+            // Replicate 返回的是一个数组，包含图片 URL
+            const outputArray = output as string[];
+            const resultUrl = outputArray?.[0];
 
             if (!resultUrl || !resultUrl.startsWith('http')) {
-                throw new Error("CogView returned invalid result");
+                throw new Error("Flux returned invalid result");
             }
 
-            // 6. Log Generation
+            console.log("Flux Result:", resultUrl);
+
+            // 6. 存库记录
             await supabase.from("generations").insert({
                 user_id: user.id,
-                prompt: prompt.trim(),  // 保存原始提示词
-                model_id: selectedModel,
+                prompt: prompt.trim(),
+                model_id: "flux-schnell",
                 image_url: resultUrl,
                 input_image_url: null,
                 status: "succeeded",
                 credits_cost: CREDITS_PER_GENERATION,
                 metadata: {
+                    provider: "replicate",
+                    model: "flux-schnell",
+                    aspect_ratio: ratio,
                     style,
-                    aspect_ratio,
-                    size,
-                    model: selectedModel,
-                    provider: "zhipu",
-                    enhanced_prompt: wasEnhanced ? finalPrompt : null,  // 保存增强后的提示词
-                    was_enhanced: wasEnhanced
+                    enhanced_prompt: finalPrompt !== prompt.trim() ? finalPrompt : null
                 }
             });
 
             return NextResponse.json({
                 url: resultUrl,
                 success: true,
-                enhancedPrompt: wasEnhanced ? finalPrompt : null,  // 返回给前端显示
-                wasEnhanced
+                model: "flux-schnell"
             });
 
         } catch (aiError: any) {
-            console.error("CogView Service Error:", aiError);
+            console.error("Replicate API Error:", aiError);
 
-            // Refund credits on failure
+            // 7. 失败退款
             await supabase.rpc('decrease_credits', {
                 p_user_id: user.id,
                 p_amount: -CREDITS_PER_GENERATION,
-                p_description: 'Refund: CogView Generation Failed'
+                p_description: 'Refund: Flux Generation Failed'
             });
 
             return NextResponse.json({

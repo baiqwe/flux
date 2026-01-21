@@ -1,31 +1,33 @@
 /** @type {import('next-sitemap').IConfig} */
+// 注意：Sitemap 现在由 app/sitemap.ts 动态生成
+// 此配置仅作为备用，主要用于 postbuild 脚本兼容
 module.exports = {
-    siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://glmimageonline.com',
-    generateRobotsTxt: true,
+    siteUrl: process.env.NEXT_PUBLIC_APP_URL || 'https://www.flux2klein.cc',
+    generateRobotsTxt: false, // 由 app/robots.ts 生成
     generateIndexSitemap: false,
 
-    // Exclude pages that shouldn't be indexed
+    // 排除不应被索引的页面
     exclude: [
-        '/api/*',           // API routes
-        '/_next/*',         // Next.js system files
+        '/api/*',
+        '/_next/*',
         '/server-sitemap.xml',
         '/icon.svg',
         '/apple-icon.png',
-        '/robots.txt',      // robots.txt is not a page
-        '/*/sign-in',       // Auth pages
+        '/robots.txt',
+        '/*/sign-in',
         '/*/sign-up',
         '/*/forgot-password',
-        '/*/dashboard',     // User dashboard (private)
+        '/*/dashboard',
     ],
 
-    // Generate alternate language links
+    // 多语言链接
     alternateRefs: [
         {
-            href: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://glmimageonline.com'}/en`,
+            href: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.flux2klein.cc'}/en`,
             hreflang: 'en',
         },
         {
-            href: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://glmimageonline.com'}/zh`,
+            href: `${process.env.NEXT_PUBLIC_APP_URL || 'https://www.flux2klein.cc'}/zh`,
             hreflang: 'zh',
         },
     ],
@@ -46,101 +48,4 @@ module.exports = {
             },
         ],
     },
-
-    // Add additional paths for GLM-Image
-    additionalPaths: async (config) => {
-        const locales = ['en', 'zh'];
-        const staticPages = [
-            'create',          // AI Studio (public landing page)
-            'pricing',
-            'privacy',
-            'terms',
-            'about'
-        ];
-
-        // Blog posts slugs
-        const blogSlugs = [
-            'cogview-4-chinese-ai-image-generator-review',
-            'z-image-vs-glm-4-comprehensive-review',
-            'nano-banana-ai-vs-glm-image-review',
-            'qwen-image-edit-2511-free-online-alternative',
-            'qwen-image-edit-3d-camera-control-guide',
-            'qwen-image-multiple-angles-3d-camera-tutorial'
-        ];
-
-        const result = [];
-
-        // Add static pages
-        for (const locale of locales) {
-            for (const page of staticPages) {
-                let priority = 0.8;
-                let changefreq = 'weekly';
-
-                if (page === 'create') {
-                    priority = 0.95;  // High priority for main product page
-                    changefreq = 'daily';
-                } else if (page === 'pricing') {
-                    priority = 0.85;
-                } else if (page === 'privacy' || page === 'terms') {
-                    priority = 0.5;
-                    changefreq = 'monthly';
-                }
-
-                result.push({
-                    loc: `/${locale}/${page}`,
-                    changefreq,
-                    priority,
-                    lastmod: new Date().toISOString(),
-                });
-            }
-
-            // Add blog index page
-            result.push({
-                loc: `/${locale}/blog`,
-                changefreq: 'daily',
-                priority: 0.9,
-                lastmod: new Date().toISOString(),
-            });
-
-            // Add individual blog posts
-            for (const slug of blogSlugs) {
-                result.push({
-                    loc: `/${locale}/blog/${slug}`,
-                    changefreq: 'weekly',
-                    priority: 0.85,
-                    lastmod: new Date().toISOString(),
-                });
-            }
-        }
-
-        return result;
-    },
-
-
-    transform: async (config, path) => {
-        // Add priority and changefreq based on page type
-        let priority = 0.7;
-        let changefreq = 'weekly';
-
-        if (path === '/en' || path === '/zh') {
-            // Homepage has highest priority
-            priority = 1.0;
-            changefreq = 'daily';
-        } else if (path.includes('/create')) {
-            // AI Studio page is very important
-            priority = 0.95;
-            changefreq = 'daily';
-        } else if (path.includes('/pricing')) {
-            priority = 0.8;
-            changefreq = 'weekly';
-        }
-
-        return {
-            loc: path,
-            changefreq,
-            priority,
-            lastmod: new Date().toISOString(),
-        };
-    },
 };
-

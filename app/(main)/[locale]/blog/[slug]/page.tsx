@@ -35,7 +35,7 @@ function getPost(slug: string, locale: string): (BlogPost & {
 
     return {
         ...post,
-        author: 'GLM-Image Team',
+        author: 'Flux.2 Klein Team',
         readTime: isZh ? '5 分钟阅读' : '5 min read',
         tags: post.keywords.slice(0, 3).map(k => k.charAt(0).toUpperCase() + k.slice(1)),
         toc,
@@ -176,12 +176,12 @@ export default async function BlogPostPage(props: { params: Promise<{ slug: stri
                             </h3>
                             <p className="text-slate-400 mb-6">
                                 {isZh
-                                    ? '免费试用 GLM-4.5 图像生成器，新用户无需付费即可体验。'
-                                    : 'Try our GLM-4.5 powered generator for free. No credit card required for trial credits.'}
+                                    ? '免费试用 Flux.2 [Klein] 图像生成器，新用户无需付费即可体验。'
+                                    : 'Try our Flux.2 [Klein] powered generator for free. No credit card required for trial credits.'}
                             </p>
                             <Link href={`${localePrefix}/create`}>
                                 <Button size="lg" className="rounded-full px-8 text-lg bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-xl shadow-indigo-500/20">
-                                    {isZh ? '免费试用 GLM-Image' : 'Try GLM-Image Free'} <ArrowRight className="ml-2 h-5 w-5" />
+                                    {isZh ? '免费试用 Flux.2 Klein' : 'Try Flux.2 Klein Free'} <ArrowRight className="ml-2 h-5 w-5" />
                                 </Button>
                             </Link>
                         </div>
@@ -194,7 +194,7 @@ export default async function BlogPostPage(props: { params: Promise<{ slug: stri
                             <Card className="bg-gradient-to-br from-indigo-600 to-purple-700 border-none text-white shadow-2xl overflow-hidden">
                                 <CardContent className="p-6 relative">
                                     <Sparkles className="absolute top-4 right-4 w-6 h-6 text-white/30" />
-                                    <div className="font-bold text-lg mb-2 opacity-90">GLM-4.5 Generator</div>
+                                    <div className="font-bold text-lg mb-2 opacity-90">Flux.2 [Klein] Generator</div>
                                     <h3 className="text-2xl font-extrabold mb-4 leading-snug">
                                         {isZh ? '每日 3 张免费生成' : 'Generate 3 Images for Free Daily'}
                                     </h3>

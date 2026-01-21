@@ -111,8 +111,8 @@ export default async function BlogPage(props: { params: Promise<{ locale: string
                     </h2>
                     <p className="text-slate-400 mb-6 max-w-xl mx-auto">
                         {isZh
-                            ? '无需等待，立即使用 GLM-4.5 生成您的第一张 AI 图像。'
-                            : 'No waiting needed. Generate your first AI image with GLM-4.5 right now.'}
+                            ? '无需等待，立即使用 Flux.2 [Klein] 生成您的第一张 AI 图像。'
+                            : 'No waiting needed. Generate your first AI image with Flux.2 [Klein] right now.'}
                     </p>
                     <Link href={`${localePrefix}/create`}>
                         <Button size="lg" className="rounded-full px-8 bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700">

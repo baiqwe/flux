@@ -37,7 +37,7 @@ export async function GET() {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    return_url: `${process.env.NEXT_PUBLIC_SITE_URL}/dashboard`,
+                    return_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard`,
                 }),
             }
         );
